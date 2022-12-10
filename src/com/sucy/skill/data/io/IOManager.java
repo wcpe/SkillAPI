@@ -36,6 +36,8 @@ import com.sucy.skill.log.Logger;
 import com.sucy.skill.manager.ComboManager;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -286,36 +288,33 @@ public abstract class IOManager
         return data;
     }
 
-    protected DataSection save(PlayerAccounts data)
-    {
-        try
-        {
-            DataSection file = new DataSection();
-            file.set(LIMIT, data.getAccountLimit());
-            file.set(ACTIVE, data.getActiveId());
-            file.set(HEALTH, data.getActiveData().getLastHealth());
-            file.set(MANA, data.getActiveData().getMana());
-            DataSection accounts = file.createSection(ACCOUNTS);
-            for (Map.Entry<Integer, PlayerData> entry : data.getAllData().entrySet())
-            {
-                DataSection account = accounts.createSection(ACCOUNT_PREFIX + entry.getKey());
+    protected YamlConfiguration save(PlayerAccounts data) {
+        try {
+            YamlConfiguration yaml = new YamlConfiguration();
+            yaml.set(LIMIT, data.getAccountLimit());
+            yaml.set(ACTIVE, data.getActiveId());
+            yaml.set(HEALTH, data.getActiveData().getLastHealth());
+            yaml.set(MANA, data.getActiveData().getMana());
+
+
+            ConfigurationSection accounts = yaml.createSection(ACCOUNTS);
+            for (Map.Entry<Integer, PlayerData> entry : data.getAllData().entrySet()) {
+                ConfigurationSection account = accounts.createSection(ACCOUNT_PREFIX + entry.getKey());
                 PlayerData acc = entry.getValue();
 
                 // Save classes
-                DataSection classes = account.createSection(CLASSES);
-                for (PlayerClass c : acc.getClasses())
-                {
-                    DataSection classSection = classes.createSection(c.getData().getName());
+                ConfigurationSection classes = account.createSection(CLASSES);
+                for (PlayerClass c : acc.getClasses()) {
+                    ConfigurationSection classSection = classes.createSection(c.getData().getName());
                     classSection.set(LEVEL, c.getLevel());
                     classSection.set(POINTS, c.getPoints());
                     classSection.set(EXP, c.getExp());
                 }
 
                 // Save skills
-                DataSection skills = account.createSection(SKILLS);
-                for (PlayerSkill skill : acc.getSkills())
-                {
-                    DataSection skillSection = skills.createSection(skill.getData().getName());
+                ConfigurationSection skills = account.createSection(SKILLS);
+                for (PlayerSkill skill : acc.getSkills()) {
+                    ConfigurationSection skillSection = skills.createSection(skill.getData().getName());
                     skillSection.set(LEVEL, skill.getLevel());
                     skillSection.set(POINTS, skill.getPoints());
                     if (skill.isOnCooldown())
@@ -323,25 +322,21 @@ public abstract class IOManager
                 }
 
                 // Save binds
-                DataSection binds = account.createSection(BINDS);
-                for (Map.Entry<Material, PlayerSkill> bind : acc.getBinds().entrySet())
-                {
+                ConfigurationSection binds = account.createSection(BINDS);
+                for (Map.Entry<Material, PlayerSkill> bind : acc.getBinds().entrySet()) {
                     if (bind.getKey() == null || bind.getValue() == null) continue;
                     binds.set(bind.getKey().name(), bind.getValue().getData().getName());
                 }
 
                 // Save skill bar
                 if ((SkillAPI.getSettings().isSkillBarEnabled() || SkillAPI.getSettings().isUsingCombat())
-                        && acc.getSkillBar() != null)
-                {
-                    DataSection skillBar = account.createSection(SKILL_BAR);
+                        && acc.getSkillBar() != null) {
+                    ConfigurationSection skillBar = account.createSection(SKILL_BAR);
                     PlayerSkillBar bar = acc.getSkillBar();
                     skillBar.set(ENABLED, bar.isEnabled());
                     skillBar.set(SLOTS, new ArrayList<>(bar.getData().keySet()));
-                    for (Map.Entry<Integer, String> slotEntry : bar.getData().entrySet())
-                    {
-                        if (slotEntry.getValue().equals(UNASSIGNED))
-                        {
+                    for (Map.Entry<Integer, String> slotEntry : bar.getData().entrySet()) {
+                        if (slotEntry.getValue().equals(UNASSIGNED)) {
                             continue;
                         }
                         skillBar.set(slotEntry.getValue(), slotEntry.getKey());
@@ -349,35 +344,29 @@ public abstract class IOManager
                 }
 
                 // Save combos
-                if (SkillAPI.getSettings().isCustomCombosAllowed())
-                {
-                    DataSection combos = account.createSection(COMBOS);
+                if (SkillAPI.getSettings().isCustomCombosAllowed()) {
+                    ConfigurationSection combos = account.createSection(COMBOS);
                     PlayerCombos comboData = acc.getComboData();
                     ComboManager cm = SkillAPI.getComboManager();
-                    if (combos != null && comboData != null)
-                    {
+                    if (combos != null && comboData != null) {
                         HashMap<Integer, String> comboMap = comboData.getSkillMap();
-                        for (Map.Entry<Integer, String> combo : comboMap.entrySet())
-                        {
+                        for (Map.Entry<Integer, String> combo : comboMap.entrySet()) {
                             combos.set(combo.getValue(), cm.getSaveString(combo.getKey()));
                         }
                     }
                 }
 
                 // Save attributes
-                if (SkillAPI.getSettings().isAttributesEnabled())
-                {
+                if (SkillAPI.getSettings().isAttributesEnabled()) {
                     account.set(ATTRIB_POINTS, acc.getAttributePoints());
-                    DataSection attribs = account.createSection(ATTRIBS);
-                    for (String key : acc.getAttributeData().keySet())
-                    {
+                    ConfigurationSection attribs = account.createSection(ATTRIBS);
+                    for (String key : acc.getAttributeData().keySet()) {
                         attribs.set(key, acc.getAttributeData().get(key));
                     }
                 }
 
                 // Save cast bars
-                if (SkillAPI.getSettings().isCastEnabled())
-                {
+                if (SkillAPI.getSettings().isCastEnabled()) {
                     acc.getCastBars().save(account.createSection(HOVER), true);
                     acc.getCastBars().save(account.createSection(INSTANT), false);
                 }
@@ -389,10 +378,8 @@ public abstract class IOManager
                     account.set(EXTRA, acc.getExtraData());
                 }
             }
-            return file;
-        }
-        catch (Exception ex)
-        {
+            return yaml;
+        } catch (Exception ex) {
             Logger.bug("Failed to save player data for " + data.getPlayer().getName());
             ex.printStackTrace();
             return null;

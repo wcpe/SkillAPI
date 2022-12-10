@@ -38,6 +38,8 @@ import com.sucy.skill.api.player.PlayerAccounts;
 import com.sucy.skill.data.Settings;
 import com.sucy.skill.log.Logger;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -140,12 +142,12 @@ public class SQLIO extends IOManager
 
     private void saveSingle(SQLConnection connection, PlayerAccounts data)
     {
-        DataSection file = save(data);
+        YamlConfiguration file = save(data);
 
         try
         {
             String playerKey = new VersionPlayer(data.getOfflinePlayer()).getIdString();
-            connection.table.createEntry(playerKey).set(DATA, file.toString(STRING));
+            connection.table.createEntry(playerKey).set(DATA, file.saveToString());
         }
         catch (Exception ex)
         {
