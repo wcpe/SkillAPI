@@ -1349,28 +1349,28 @@ public class PlayerData {
         }
 
         // Update maxes
-        double health = bonusHealth;
+//        double health = bonusHealth;
         maxMana = bonusMana;
         for (PlayerClass c : classes.values()) {
-            health += c.getHealth();
+//            health += c.getHealth();
             maxMana += c.getMana();
         }
-        if (health == bonusHealth) {
-            health += SkillAPI.getSettings().getDefaultHealth();
-        }
-        if (health <= 0) {
-            health = SkillAPI.getSettings().getDefaultHealth();
-        }
-        if (SkillAPI.getSettings().isModifyHealth()) { player.setMaxHealth(health); }
-        mana = Math.min(mana, maxMana);
+//        if (health == bonusHealth) {
+//            health += SkillAPI.getSettings().getDefaultHealth();
+//        }
+//        if (health <= 0) {
+//            health = SkillAPI.getSettings().getDefaultHealth();
+//        }
+//        if (SkillAPI.getSettings().isModifyHealth()) { player.setMaxHealth(health); }
+//        mana = Math.min(mana, maxMana);
 
         // Health scaling is available starting with 1.6.2
-        if (SkillAPI.getSettings().isOldHealth()) {
-            player.setHealthScaled(true);
-            player.setHealthScale(20);
-        } else {
-            player.setHealthScaled(false);
-        }
+//        if (SkillAPI.getSettings().isOldHealth()) {
+//            player.setHealthScaled(true);
+//            player.setHealthScale(20);
+//        } else {
+//            player.setHealthScaled(false);
+//        }
     }
 
     /**
